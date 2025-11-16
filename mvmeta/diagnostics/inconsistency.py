@@ -1,8 +1,21 @@
 """
 Inconsistency detection for network meta-analysis.
 
-Implements node-splitting and design inconsistency methods to test
-the consistency assumption in network meta-analysis.
+⚠️ WARNING: This module contains INCOMPLETE implementations marked as future work.
+These functions require full network meta-analysis infrastructure which is not yet complete.
+
+Status of functions:
+- node_splitting(): INCOMPLETE - indirect estimates return None
+- design_inconsistency_test(): PARTIAL - works for simple designs
+- loop_inconsistency(): WORKS - for basic loop detection
+- global_inconsistency_test(): INCOMPLETE - requires full NMA model
+- detect_all_inconsistencies(): PARTIAL - runs available tests only
+
+These functions are NOT exported in the public API and should be considered
+experimental/unstable. Full implementation is planned for future releases.
+
+For current functionality, use only the heterogeneity and influence diagnostics
+from mvmeta.diagnostics.
 """
 
 from typing import Dict, List, Tuple, Optional
@@ -24,6 +37,11 @@ def node_splitting(
     """
     Node-splitting for inconsistency detection.
 
+    ⚠️ WARNING: INCOMPLETE IMPLEMENTATION
+    This function computes direct estimates but returns None for indirect estimates.
+    Indirect estimation requires full network meta-analysis model which is not yet implemented.
+    Marked as future work - DO NOT use in production.
+
     Compares direct and indirect evidence for a specific comparison.
 
     Parameters
@@ -40,8 +58,15 @@ def node_splitting(
     Returns
     -------
     Dict
-        Node-splitting results including direct, indirect estimates
-        and inconsistency test
+        Node-splitting results including:
+        - direct_estimate: Array of direct estimates
+        - indirect_estimate: None (NOT IMPLEMENTED)
+        - message: Status message indicating incomplete implementation
+
+    Notes
+    -----
+    This function is NOT complete and NOT exported in the public API.
+    Use with caution and expect None values for indirect estimates.
     """
     n_outcomes = len(outcomes)
 

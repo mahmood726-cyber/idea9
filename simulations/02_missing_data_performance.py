@@ -134,7 +134,7 @@ def run_missing_data_scenario(
         )
 
         # Create missing data
-        y_miss = create_missing_data(y_complete, S, mechanism, missing_rate, seed)
+        y_miss = create_missing_data(y_complete, S, mechanism, missing_rate, iter_seed)
 
         # Methods to compare
         methods = {

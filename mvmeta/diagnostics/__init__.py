@@ -18,13 +18,13 @@ from mvmeta.diagnostics.influence import (
     dfbetas,
     comprehensive_diagnostics
 )
-from mvmeta.diagnostics.inconsistency import (
-    node_splitting,
-    design_inconsistency_test,
-    loop_inconsistency,
-    global_inconsistency_test,
-    detect_all_inconsistencies
-)
+
+# NOTE: Inconsistency detection functions (node_splitting, etc.) are available in
+# mvmeta.diagnostics.inconsistency but not exported in the public API.
+# These require full network meta-analysis implementation and are marked as future work.
+# They can be accessed via:
+#   from mvmeta.diagnostics.inconsistency import node_splitting  # etc.
+# but are NOT considered stable or complete.
 
 __all__ = [
     # Heterogeneity
@@ -41,10 +41,4 @@ __all__ = [
     "hat_values",
     "dfbetas",
     "comprehensive_diagnostics",
-    # Inconsistency
-    "node_splitting",
-    "design_inconsistency_test",
-    "loop_inconsistency",
-    "global_inconsistency_test",
-    "detect_all_inconsistencies",
 ]
