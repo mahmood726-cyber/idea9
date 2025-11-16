@@ -18,6 +18,14 @@ from mvmeta.diagnostics.influence import (
     dfbetas,
     comprehensive_diagnostics
 )
+from mvmeta.diagnostics.cross_validation import (
+    leave_one_out_cv,
+    k_fold_cv,
+    cross_validate,
+    print_cv_summary,
+    calibration_plot,
+    compare_methods_cv
+)
 
 # NOTE: Inconsistency detection functions (node_splitting, etc.) are available in
 # mvmeta.diagnostics.inconsistency but not exported in the public API.
@@ -41,4 +49,11 @@ __all__ = [
     "hat_values",
     "dfbetas",
     "comprehensive_diagnostics",
+    # Cross-validation
+    "leave_one_out_cv",
+    "k_fold_cv",
+    "cross_validate",
+    "print_cv_summary",
+    "calibration_plot",
+    "compare_methods_cv",
 ]
