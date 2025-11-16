@@ -116,8 +116,12 @@ def run_missing_data_scenario(
     n_studies = 30
     n_outcomes = 2
 
+    # Use SeedSequence for proper independence (addresses reviewer concern)
+    base_rng = np.random.SeedSequence(seed_offset)
+    child_seeds = base_rng.spawn(n_iterations)
+
     for iter_num in tqdm(range(n_iterations), desc=f"{mechanism}, rate={missing_rate:.0%}"):
-        seed = seed_offset + iter_num
+        iter_seed = int(child_seeds[iter_num].generate_state(1)[0])
 
         # Generate complete data
         y_complete, S = simulate_multivariate_ma(
@@ -126,7 +130,7 @@ def run_missing_data_scenario(
             true_effects=true_effects,
             between_study_sd=0.4,
             correlation=0.5,
-            seed=seed
+            seed=iter_seed
         )
 
         # Create missing data

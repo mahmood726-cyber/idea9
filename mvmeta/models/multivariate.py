@@ -301,16 +301,64 @@ class MultivariateMetaAnalysis(BaseMetaAnalysis):
         # Compute log-likelihood (approximate)
         loglik = self._compute_ml_loglik(y, S, Psi_hat, X, return_neg=False)
 
+        # Bayesian diagnostics
+        convergence_diagnostics = {}
+
+        # R-hat (Gelman-Rubin statistic) - should be < 1.01
+        rhat_theta = az.rhat(trace.posterior['theta']).values
+        rhat_max = np.max(rhat_theta)
+        convergence_diagnostics['rhat_max'] = float(rhat_max)
+        convergence_diagnostics['rhat_theta'] = rhat_theta
+
+        if rhat_max > 1.01:
+            warnings.warn(
+                f"Some parameters have R-hat > 1.01 (max={rhat_max:.4f}). "
+                "Chains may not have converged. Consider increasing n_tune or n_draws.",
+                UserWarning
+            )
+
+        # Effective sample size - should be > 400
+        ess_bulk_theta = az.ess(trace.posterior['theta'], method='bulk').values
+        ess_min = np.min(ess_bulk_theta)
+        convergence_diagnostics['ess_bulk_min'] = float(ess_min)
+        convergence_diagnostics['ess_bulk_theta'] = ess_bulk_theta
+
+        if ess_min < 400:
+            warnings.warn(
+                f"Low effective sample size (min={ess_min:.0f}). "
+                "Consider increasing n_draws for more reliable inference.",
+                UserWarning
+            )
+
+        # Check for divergences
+        divergences = trace.sample_stats['diverging'].sum().values
+        convergence_diagnostics['n_divergences'] = int(divergences)
+
+        if divergences > 0:
+            warnings.warn(
+                f"Found {divergences} divergent transitions. "
+                "This may indicate problems with the posterior geometry. "
+                "Consider reparameterizing the model or increasing target_accept.",
+                UserWarning
+            )
+
+        # Mark as converged if R-hat and ESS are acceptable
+        converged = (rhat_max < 1.01) and (ess_min >= 400) and (divergences == 0)
+
         return MetaAnalysisResults(
             theta=theta_hat,
             theta_se=theta_se,
             Psi=Psi_hat,
             loglik=loglik,
-            converged=True,
+            converged=converged,
             method='Bayesian',
             n_studies=n_studies,
             n_outcomes=n_outcomes,
-            additional_info={'trace': trace, 'model': model}
+            additional_info={
+                'trace': trace,
+                'model': model,
+                'diagnostics': convergence_diagnostics
+            }
         )
 
     def _compute_reml_loglik(

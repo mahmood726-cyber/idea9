@@ -213,6 +213,9 @@ def compute_prediction_interval(
     """
     Compute prediction intervals for future studies.
 
+    Uses t-distribution to account for uncertainty in estimating
+    the between-study variance (Higgins et al. 2009).
+
     Parameters
     ----------
     results : MetaAnalysisResults
@@ -224,20 +227,39 @@ def compute_prediction_interval(
     -------
     np.ndarray
         Prediction intervals (n_outcomes, 2)
+
+    References
+    ----------
+    Higgins, J. P., Thompson, S. G., & Spiegelhalter, D. J. (2009).
+    A re‐evaluation of random‐effects meta‐analysis.
+    Journal of the Royal Statistical Society: Series A, 172(1), 137-159.
     """
-    from scipy.stats import norm
+    from scipy.stats import t, norm
 
     n_outcomes = results.n_outcomes
-    z = norm.ppf(1 - (1 - coverage) / 2)
+    n_studies = results.n_studies
 
     pred_intervals = np.zeros((n_outcomes, 2))
 
     for j in range(n_outcomes):
-        # Prediction standard error
+        # Prediction standard error (accounts for both estimation uncertainty
+        # and between-study heterogeneity)
         pred_se = np.sqrt(results.theta_se[j]**2 + results.Psi[j, j])
 
-        pred_intervals[j, 0] = results.theta[j] - z * pred_se
-        pred_intervals[j, 1] = results.theta[j] + z * pred_se
+        # Use t-distribution for small samples (Higgins et al. 2009)
+        # df approximation: k - 1 for univariate case
+        # For multivariate, use conservative estimate
+        df = max(n_studies - n_outcomes, 1)
+
+        if df >= 30:
+            # For large df, t ≈ normal
+            quantile = norm.ppf(1 - (1 - coverage) / 2)
+        else:
+            # Use t-distribution for small samples
+            quantile = t.ppf(1 - (1 - coverage) / 2, df=df)
+
+        pred_intervals[j, 0] = results.theta[j] - quantile * pred_se
+        pred_intervals[j, 1] = results.theta[j] + quantile * pred_se
 
     return pred_intervals
 

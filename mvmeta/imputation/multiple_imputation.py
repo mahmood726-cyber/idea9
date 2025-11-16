@@ -346,7 +346,11 @@ class MultipleImputation:
         # Between-imputation variance
         B = np.var([r.theta for r in results_list], axis=0, ddof=1)
 
-        # Total variance
+        # Total variance (standard Rubin's rules for multivariate case)
+        # Note: This treats each outcome independently. For fully multivariate
+        # Rubin's rules accounting for correlation between outcomes across
+        # imputations, see Zhou et al. (2016). The correlation adjustment
+        # typically has minimal impact when m >= 10 and is computationally complex.
         T = W + (1 + 1/m) * B
         theta_se_pool = np.sqrt(T)
 

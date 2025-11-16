@@ -57,8 +57,14 @@ def run_simulation_scenario(
 
     results = []
 
+    # Use SeedSequence for proper independence of random streams
+    # (addresses reviewer concern about sequential seeding)
+    base_rng = np.random.SeedSequence(seed_offset)
+    child_seeds = base_rng.spawn(n_iterations)
+
     for iter_num in tqdm(range(n_iterations), desc=f"k={n_studies}, p={n_outcomes}, ρ={between_study_correlation:.1f}"):
-        seed = seed_offset + iter_num
+        # Each iteration gets independent random stream
+        iter_seed = int(child_seeds[iter_num].generate_state(1)[0])
 
         # Generate data
         y, S = simulate_multivariate_ma(
@@ -68,7 +74,7 @@ def run_simulation_scenario(
             between_study_sd=between_study_sd,
             within_study_sd=0.3,
             correlation=between_study_correlation,
-            seed=seed
+            seed=iter_seed
         )
 
         # Fit with different methods
